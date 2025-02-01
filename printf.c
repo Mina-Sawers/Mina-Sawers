@@ -62,11 +62,14 @@ int	print_digit_X(long n, int base)
 	}
 }
 
-int	print_str(char *s)
+int	print_str(char *s, int precision)
 {
 	int	count;
-
 	count = 0;
+	int i=0;
+	int len = strlen(s);
+
+	if(len<=precision){
 	while (*s){
 		//count += write(1, s++, 1);
 		if( (*s>0&&*s<32) || *s >= 127){
@@ -83,111 +86,190 @@ int	print_str(char *s)
 		else
             count += write_to_buffer(*s++);
     }
+	}
+	else{
+        while (*s){
+        if(i>=precision)break;
+		//count += write(1, s++, 1);
+		if( (*s>0&&*s<32) || *s >= 127){
+            count+=write_to_buffer('\\');
+            count+=write_to_buffer('x');
+            if((long)*s < 16){
+                count+=write_to_buffer('0');
+                print_digit_X((long)*s,16);
+            }
+            else
+                print_digit_X((long)*s,16);
+            s++;
+
+
+		}
+		else
+            count += write_to_buffer(*s++);
+        i++;
+    }
+	}
 	return count;
 }
 
-int	print_format(char specifier, va_list ap, char length_modifier)
-{
-	int	count;
+int print_format(char specifier, va_list ap, char length_modifier, int width, int precision, int left_justify) {
+    int count = 0;
+    char *str;
+    char pad_char = ' ';
 
-	count = 0;
-	if (specifier == 'c')
-		count = print_char(va_arg(ap, int));
-	else if (specifier == 's')
-		count = print_str(va_arg(ap, char *));
-    else if (specifier == 'd' || specifier == 'i') {
-        //Note that d and i are the same but the only difference when using scanf -- When I looked up information online, I found that it said this.
-        if (length_modifier == 'l') {
-            count = print_digit((long)va_arg(ap, long), 10);
+    if (specifier == 'c') {
+        char c = (char)va_arg(ap, int);
+        int len = 1; // Because the length of the character is always 1
+        if (width > len && !left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
         }
-        else if (length_modifier == 'h') {
-            count = print_digit((short)va_arg(ap, int), 10);
-        }
-        else {
-            count = print_digit((long)va_arg(ap, int), 10);
+        count += write_to_buffer(c);
+        if (width > len && left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
         }
     }
-    else if (specifier == 'u') {
+    else if (specifier == 's') {
+        str = va_arg(ap, char *);
+        int len = strlen(str);
+        if (precision < len) {
+            len = precision;
+        }
+        if (width > len && !left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
+        }
+        count += print_str(str, precision);
+        if (width > len && left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
+        }
+    } else if (specifier == 'd' || specifier == 'i') {
+	//Note that d and i are the same but the only difference when using scanf -- When I looked up information online, I found that it said this.
+        long num;
         if (length_modifier == 'l') {
-            count = print_digit((unsigned long)va_arg(ap, unsigned int), 10);
+            num = va_arg(ap, int);
+        } else if (length_modifier == 'h') {
+            num = (short)va_arg(ap, int);
+        } else {
+            num = va_arg(ap, int);
         }
-        else if (length_modifier == 'h') {
-            count = print_digit((unsigned short)va_arg(ap, unsigned int), 10);
+        char num_str[32];
+        int len = sprintf(num_str, "%ld", num);
+        if (precision > len) {
+            for (int i = 0; i < precision - len; i++) {
+                count += write_to_buffer('0');
+            }
         }
-        else {
-            count = print_digit((unsigned long)va_arg(ap, unsigned int), 10);
+        if (width > len && !left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
         }
-    }
-    else if (specifier == 'o') {
+        count += print_digit(num, 10);
+        if (width > len && left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
+        }
+    } else if (specifier == 'u' || specifier == 'o' || specifier == 'x' || specifier == 'X') {
+        unsigned long num;
         if (length_modifier == 'l') {
-            count = print_digit((unsigned long)va_arg(ap, unsigned int), 8);
+            num = va_arg(ap, unsigned int);
+        } else if (length_modifier == 'h') {
+            num = (unsigned short)va_arg(ap, unsigned int);
+        } else {
+            num = va_arg(ap, unsigned int);
         }
-        else if (length_modifier == 'h') {
-            count = print_digit((unsigned short)va_arg(ap, unsigned int), 8);
+        char num_str[32];
+        int len = sprintf(num_str, "%lu", num);
+        if (precision > len) {
+            for (int i = 0; i < precision - len; i++) {
+                count += write_to_buffer('0');
+            }
         }
-        else {
-            count = print_digit((unsigned long)va_arg(ap, unsigned int), 8);
+        if (width > len && !left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
         }
+        if (specifier == 'u') {
+            count += print_digit(num, 10);
+        } else if (specifier == 'o') {
+            count += print_digit(num, 8);
+        } else if (specifier == 'x') {
+            count += print_digit(num, 16);
+        } else if (specifier == 'X') {
+            count += print_digit_X(num, 16);
+        }
+        if (width > len && left_justify) {
+            for (int i = 0; i < width - len; i++) {
+                count += write_to_buffer(pad_char);
+            }
+        }
+    } else {
+	//count += write(1, &specifier, 1);
+        count += write_to_buffer(specifier);
     }
-    else if (specifier == 'x') {
-        if (length_modifier == 'l') {
-            count = print_digit((unsigned long)va_arg(ap, unsigned int), 16);
-        }
-        else if (length_modifier == 'h') {
-            count = print_digit((unsigned short)va_arg(ap, unsigned int), 16);
-        }
-        else {
-            count = print_digit((unsigned long)va_arg(ap, unsigned int), 16);
-        }
-    }
-    else if (specifier == 'X') {
-        if (length_modifier == 'l') {
-            count = print_digit_X((unsigned long)va_arg(ap, unsigned int), 16);
-        }
-        else if (length_modifier == 'h') {
-            count = print_digit_X((unsigned short)va_arg(ap, unsigned int), 16);
-        }
-        else {
-            count = print_digit_X((unsigned long)va_arg(ap, unsigned int), 16);
-        }
-    }
-	else
-		//count += write(1, &specifier, 1);
-		count += write_to_buffer(specifier);
-	return count;
+    return count;
 }
 
+int _printf(const char *format, ...) {
+    va_list ap;
+    int count = 0;
+    buffer = (char *)malloc(1024 * sizeof(char));
 
-int	_printf(const char *format, ...)
-{
-	va_list	ap;
-	int	count;
-    buffer = (char *)malloc (1024 * sizeof(char));
-
-
-	va_start(ap, format);
-	count = 0;
+    va_start(ap, format);
     while (*format) {
         if (*format == '%') {
             format++;
+            int left_justify = 0;
+            if (*format == '-') {
+                left_justify = 1;
+                format++;
+            }
+            int width = 0;
+            int precision = -1;
+
+
+            while (*format >= '0' && *format <= '9') {
+                width = width * 10 + (*format - '0');
+                format++;
+            }
+
+
+            if (*format == '.') {
+                format++;
+                precision = 0;
+                while (*format >= '0' && *format <= '9') {
+                    precision = precision * 10 + (*format - '0');
+                    format++;
+                }
+            }
+
             char length_modifier = '\0';
             if (*format == 'l' || *format == 'h') {
                 length_modifier = *format;
                 format++;
             }
-            count += print_format(*format, ap, length_modifier);
+            count += print_format(*format, ap, length_modifier, width, precision, left_justify);
         } else {
             count += write_to_buffer(*format);
         }
         format++;
     }
+    va_end(ap);
 
-	va_end(ap);
-
-    if (buff_indx >= 0) {
+    if (buff_indx > 0) {
         write(1, buffer, buff_indx);
         buff_indx = 0;
     }
 
-	return count;
+
+    return count;
 }

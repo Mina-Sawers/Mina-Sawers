@@ -37,6 +37,11 @@ int	main()
     count = _printf("%hi\n",30000); //In Range
     printf("%d\n",count);
 
+    //Test the code for Task 9,10,11
+    count = _printf("%5.2s\n","Ahmed");
+    printf("%d\n",count);
+    count = _printf("%7u\n",55211);
+    printf("%d\n",count);
 
     free(buffer);
     return 0;
