@@ -27,6 +27,9 @@ int	main()
     count = _printf("%X\n",42);
     printf("%d\n",count);
 
+    //Test the code for Task 7
+    count = _printf("%s\n","Hello\nSchool");
+    printf("%d\n",count);
 
 
     free(buffer);

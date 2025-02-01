@@ -67,9 +67,22 @@ int	print_str(char *s)
 	int	count;
 
 	count = 0;
-	while (*s)
+	while (*s){
 		//count += write(1, s++, 1);
-		count += write_to_buffer(*s++);
+		if( (*s>0&&*s<32) || *s >= 127){
+            count+=write_to_buffer('\\');
+            count+=write_to_buffer('x');
+            if((long)*s < 16){
+                count+=write_to_buffer('0');
+                print_digit_X((long)*s,16);
+            }
+            else
+                print_digit_X((long)*s,16);
+            s++;
+		}
+		else
+            count += write_to_buffer(*s++);
+    }
 	return count;
 }
 
