@@ -48,6 +48,8 @@ int	print_format(char specifier, va_list ap)
 	else if (specifier == 'd' || specifier == 'i')
         //Note that d and i are the same but the only difference when using scanf -- When I looked up information online, I found that it said this.
 		count = print_digit((long)va_arg(ap, int), 10);
+    else if (specifier == 'b')
+        count = print_digit((long)va_arg(ap,unsigned int),2);
 	else
 		count += write(1, &specifier, 1);
 	return count;

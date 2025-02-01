@@ -13,6 +13,9 @@ int	main()
     count = _printf("%d %i\n",10,10);
     printf("%d\n",count);
 
+    //Test the code for Task 4
+    count = _printf("%b\n",98);
+    printf("%d\n",count);
 
 
     return 0;
