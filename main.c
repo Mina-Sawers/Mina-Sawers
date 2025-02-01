@@ -17,6 +17,14 @@ int	main()
     count = _printf("%b\n",98);
     printf("%d\n",count);
 
-
+    //Test the code for Task 5
+    count = _printf("%u\n",43);
+    printf("%d\n",count);
+    count = _printf("%o\n",43);
+    printf("%d\n",count);
+    count = _printf("%x\n",43);
+    printf("%d\n",count);
+    count = _printf("%X\n",42);
+    printf("%d\n",count);
     return 0;
 }

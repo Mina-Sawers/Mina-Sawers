@@ -6,12 +6,13 @@ int	print_char(int c)
 	return write(1, &c, 1);
 }
 
+
 int	print_digit(long n, int base)
 {
 	int		count;
 	char	*symbols;
 
-	symbols = "0123456789";
+	symbols = "0123456789abcdef";
 	if (n < 0)
 	{
 		write(1, "-", 1);
@@ -23,6 +24,26 @@ int	print_digit(long n, int base)
 	{
 		count = print_digit(n / base, base);
 		return count + print_digit(n % base, base);
+	}
+}
+
+int	print_digit_X(long n, int base)
+{
+	int		count;
+	char	*symbols;
+
+	symbols = "0123456789ABCDEF";
+	if (n < 0)
+	{
+		write(1, "-", 1);
+		return print_digit_X(-n, base) + 1;
+	}
+	else if (n < base)
+		return print_char(symbols[n]);
+	else
+	{
+		count = print_digit_X(n / base, base);
+		return count + print_digit_X(n % base, base);
 	}
 }
 
@@ -50,6 +71,14 @@ int	print_format(char specifier, va_list ap)
 		count = print_digit((long)va_arg(ap, int), 10);
     else if (specifier == 'b')
         count = print_digit((long)va_arg(ap,unsigned int),2);
+    else if (specifier == 'u')
+        count = print_digit((long)va_arg(ap,unsigned int),10);
+    else if (specifier == 'o')
+        count = print_digit((long)va_arg(ap,unsigned int),8);
+    else if (specifier == 'x')
+        count = print_digit((long)va_arg(ap,unsigned int),16);
+    else if (specifier == 'X')
+        count = print_digit_X((long)va_arg(ap,unsigned int),16);
 	else
 		count += write(1, &specifier, 1);
 	return count;
