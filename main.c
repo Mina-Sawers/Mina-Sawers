@@ -31,6 +31,12 @@ int	main()
     count = _printf("%s\n","Hello\nSchool");
     printf("%d\n",count);
 
+    //Test the code for Task 8
+    count = _printf("%hi\n",33000); //Exceeds The Range
+    printf("%d\n",count);
+    count = _printf("%hi\n",30000); //In Range
+    printf("%d\n",count);
+
 
     free(buffer);
     return 0;

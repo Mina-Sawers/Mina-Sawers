@@ -86,7 +86,7 @@ int	print_str(char *s)
 	return count;
 }
 
-int	print_format(char specifier, va_list ap)
+int	print_format(char specifier, va_list ap, char length_modifier)
 {
 	int	count;
 
@@ -95,19 +95,62 @@ int	print_format(char specifier, va_list ap)
 		count = print_char(va_arg(ap, int));
 	else if (specifier == 's')
 		count = print_str(va_arg(ap, char *));
-	else if (specifier == 'd' || specifier == 'i')
+    else if (specifier == 'd' || specifier == 'i') {
         //Note that d and i are the same but the only difference when using scanf -- When I looked up information online, I found that it said this.
-		count = print_digit((long)va_arg(ap, int), 10);
-    else if (specifier == 'b')
-        count = print_digit((long)va_arg(ap,unsigned int),2);
-    else if (specifier == 'u')
-        count = print_digit((long)va_arg(ap,unsigned int),10);
-    else if (specifier == 'o')
-        count = print_digit((long)va_arg(ap,unsigned int),8);
-    else if (specifier == 'x')
-        count = print_digit((long)va_arg(ap,unsigned int),16);
-    else if (specifier == 'X')
-        count = print_digit_X((long)va_arg(ap,unsigned int),16);
+        if (length_modifier == 'l') {
+            count = print_digit((long)va_arg(ap, long), 10);
+        }
+        else if (length_modifier == 'h') {
+            count = print_digit((short)va_arg(ap, int), 10);
+        }
+        else {
+            count = print_digit((long)va_arg(ap, int), 10);
+        }
+    }
+    else if (specifier == 'u') {
+        if (length_modifier == 'l') {
+            count = print_digit((unsigned long)va_arg(ap, unsigned int), 10);
+        }
+        else if (length_modifier == 'h') {
+            count = print_digit((unsigned short)va_arg(ap, unsigned int), 10);
+        }
+        else {
+            count = print_digit((unsigned long)va_arg(ap, unsigned int), 10);
+        }
+    }
+    else if (specifier == 'o') {
+        if (length_modifier == 'l') {
+            count = print_digit((unsigned long)va_arg(ap, unsigned int), 8);
+        }
+        else if (length_modifier == 'h') {
+            count = print_digit((unsigned short)va_arg(ap, unsigned int), 8);
+        }
+        else {
+            count = print_digit((unsigned long)va_arg(ap, unsigned int), 8);
+        }
+    }
+    else if (specifier == 'x') {
+        if (length_modifier == 'l') {
+            count = print_digit((unsigned long)va_arg(ap, unsigned int), 16);
+        }
+        else if (length_modifier == 'h') {
+            count = print_digit((unsigned short)va_arg(ap, unsigned int), 16);
+        }
+        else {
+            count = print_digit((unsigned long)va_arg(ap, unsigned int), 16);
+        }
+    }
+    else if (specifier == 'X') {
+        if (length_modifier == 'l') {
+            count = print_digit_X((unsigned long)va_arg(ap, unsigned int), 16);
+        }
+        else if (length_modifier == 'h') {
+            count = print_digit_X((unsigned short)va_arg(ap, unsigned int), 16);
+        }
+        else {
+            count = print_digit_X((unsigned long)va_arg(ap, unsigned int), 16);
+        }
+    }
 	else
 		//count += write(1, &specifier, 1);
 		count += write_to_buffer(specifier);
@@ -124,15 +167,20 @@ int	_printf(const char *format, ...)
 
 	va_start(ap, format);
 	count = 0;
-	while (*format)
-	{
-		if (*format == '%')
-			count += print_format(*++format, ap);
-		else
-			//count += write(STDOUT_FILENO, format, 1);
-			count += write_to_buffer(*format);
-		++format;
-	}
+    while (*format) {
+        if (*format == '%') {
+            format++;
+            char length_modifier = '\0';
+            if (*format == 'l' || *format == 'h') {
+                length_modifier = *format;
+                format++;
+            }
+            count += print_format(*format, ap, length_modifier);
+        } else {
+            count += write_to_buffer(*format);
+        }
+        format++;
+    }
 
 	va_end(ap);
 
