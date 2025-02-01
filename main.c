@@ -26,5 +26,9 @@ int	main()
     printf("%d\n",count);
     count = _printf("%X\n",42);
     printf("%d\n",count);
+
+
+
+    free(buffer);
     return 0;
 }

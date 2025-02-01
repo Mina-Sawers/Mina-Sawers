@@ -1,9 +1,22 @@
 #include "main.h"
 
 
+char *buffer;
+int buff_indx = 0;
+
+int write_to_buffer(char c){
+    if (buff_indx >= 1024) {
+        write(1, buffer, buff_indx);
+        buff_indx = 0;
+    }
+    buffer[buff_indx++] = c;
+    return 1;
+}
+
 int	print_char(int c)
 {
-	return write(1, &c, 1);
+	//return write(1, &c, 1);
+	return write_to_buffer((char)c);
 }
 
 
@@ -15,7 +28,8 @@ int	print_digit(long n, int base)
 	symbols = "0123456789abcdef";
 	if (n < 0)
 	{
-		write(1, "-", 1);
+		//write(1, "-", 1);
+		write_to_buffer('-');
 		return print_digit(-n, base) + 1;
 	}
 	else if (n < base)
@@ -35,7 +49,8 @@ int	print_digit_X(long n, int base)
 	symbols = "0123456789ABCDEF";
 	if (n < 0)
 	{
-		write(1, "-", 1);
+		//write(1, "-", 1);
+		write_to_buffer('-');
 		return print_digit_X(-n, base) + 1;
 	}
 	else if (n < base)
@@ -53,7 +68,8 @@ int	print_str(char *s)
 
 	count = 0;
 	while (*s)
-		count += write(1, s++, 1);
+		//count += write(1, s++, 1);
+		count += write_to_buffer(*s++);
 	return count;
 }
 
@@ -80,7 +96,8 @@ int	print_format(char specifier, va_list ap)
     else if (specifier == 'X')
         count = print_digit_X((long)va_arg(ap,unsigned int),16);
 	else
-		count += write(1, &specifier, 1);
+		//count += write(1, &specifier, 1);
+		count += write_to_buffer(specifier);
 	return count;
 }
 
@@ -89,6 +106,8 @@ int	_printf(const char *format, ...)
 {
 	va_list	ap;
 	int	count;
+    buffer = (char *)malloc (1024 * sizeof(char));
+
 
 	va_start(ap, format);
 	count = 0;
@@ -97,9 +116,17 @@ int	_printf(const char *format, ...)
 		if (*format == '%')
 			count += print_format(*++format, ap);
 		else
-			count += write(STDOUT_FILENO, format, 1);
+			//count += write(STDOUT_FILENO, format, 1);
+			count += write_to_buffer(*format);
 		++format;
 	}
+
 	va_end(ap);
+
+    if (buff_indx >= 0) {
+        write(1, buffer, buff_indx);
+        buff_indx = 0;
+    }
+
 	return count;
 }
